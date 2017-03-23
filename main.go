@@ -39,10 +39,10 @@ func send(w http.ResponseWriter, req *http.Request) {
 		panic(err)
 	}
 	defer req.Body.Close()
-	co2Queued.WithLabelValues("FreeRAM", strconv.Itoa(co2_data.Id), co2_data.SSID, co2_data.Mac).Add(float64(co2_data.FreeRAM))
-	co2Queued.WithLabelValues("Temp", strconv.Itoa(co2_data.Id), co2_data.SSID, co2_data.Mac).Add(float64(co2_data.Temp))
-	co2Queued.WithLabelValues("Humidity", strconv.Itoa(co2_data.Id), co2_data.SSID, co2_data.Mac).Add(float64(co2_data.Humidity))
-	co2Queued.WithLabelValues("PPM", strconv.Itoa(co2_data.Id), co2_data.SSID, co2_data.Mac).Add(float64(co2_data.Ppm))
+	co2Queued.WithLabelValues("FreeRAM", strconv.Itoa(co2_data.Id), co2_data.SSID, co2_data.Mac).Set(float64(co2_data.FreeRAM))
+	co2Queued.WithLabelValues("Temp", strconv.Itoa(co2_data.Id), co2_data.SSID, co2_data.Mac).Set(float64(co2_data.Temp))
+	co2Queued.WithLabelValues("Humidity", strconv.Itoa(co2_data.Id), co2_data.SSID, co2_data.Mac).Set(float64(co2_data.Humidity))
+	co2Queued.WithLabelValues("PPM", strconv.Itoa(co2_data.Id), co2_data.SSID, co2_data.Mac).Set(float64(co2_data.Ppm))
 	log.Printf("%+v\n", co2_data)
 }
 
