@@ -51,6 +51,7 @@ func init() {
 }
 
 func main() {
+	log.Println("Running on port :8082")
 	http.Handle("/metrics", prometheus.Handler())
 	http.HandleFunc("/send", send)
 	log.Fatal(http.ListenAndServe(":8082", nil))
