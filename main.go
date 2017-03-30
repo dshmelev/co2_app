@@ -1,11 +1,12 @@
 package main
 
 import (
+	"bytes"
 	"encoding/json"
 	"github.com/prometheus/client_golang/prometheus"
+	"io/ioutil"
 	"log"
 	"net/http"
-	"strconv"
 )
 
 var (
@@ -18,7 +19,6 @@ var (
 		},
 		[]string{
 			"metric",
-			"Id",
 			"SSID",
 			"MAC",
 		},
@@ -26,24 +26,32 @@ var (
 )
 
 type co2_struct struct {
-	Id, Temp, Humidity, Ppm, FreeRAM int
+	Id, Temp, Humidity, Ppm, FreeRAM float64
 	Mac, SSID                        string
 }
 
 var co2_data co2_struct
 
 func send(w http.ResponseWriter, req *http.Request) {
-	decoder := json.NewDecoder(req.Body)
-	err := decoder.Decode(&co2_data)
+	defer req.Body.Close()
+
+	var bodyBytes []byte
+	if req.Body != nil {
+		bodyBytes, _ = ioutil.ReadAll(req.Body)
+	}
+	req.Body = ioutil.NopCloser(bytes.NewBuffer(bodyBytes))
+	bodyString := string(bodyBytes)
+
+	log.Println(bodyString)
+	err := json.Unmarshal(bodyBytes, &co2_data)
 	if err != nil {
 		panic(err)
 	}
-	defer req.Body.Close()
-	co2Queued.WithLabelValues("FreeRAM", strconv.Itoa(co2_data.Id), co2_data.SSID, co2_data.Mac).Set(float64(co2_data.FreeRAM))
-	co2Queued.WithLabelValues("Temp", strconv.Itoa(co2_data.Id), co2_data.SSID, co2_data.Mac).Set(float64(co2_data.Temp))
-	co2Queued.WithLabelValues("Humidity", strconv.Itoa(co2_data.Id), co2_data.SSID, co2_data.Mac).Set(float64(co2_data.Humidity))
-	co2Queued.WithLabelValues("PPM", strconv.Itoa(co2_data.Id), co2_data.SSID, co2_data.Mac).Set(float64(co2_data.Ppm))
-	log.Printf("%+v\n", co2_data)
+	co2Queued.WithLabelValues("FreeRAM", co2_data.SSID, co2_data.Mac).Set(co2_data.FreeRAM)
+	co2Queued.WithLabelValues("Temp", co2_data.SSID, co2_data.Mac).Set(co2_data.Temp)
+	co2Queued.WithLabelValues("Humidity", co2_data.SSID, co2_data.Mac).Set(co2_data.Humidity)
+	co2Queued.WithLabelValues("PPM", co2_data.SSID, co2_data.Mac).Set(co2_data.Ppm)
+	log.Printf("JSON: %+v\n", co2_data)
 }
 
 func init() {
