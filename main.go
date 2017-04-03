@@ -26,8 +26,8 @@ var (
 )
 
 type co2_struct struct {
-	Id, Temp, Humidity, Ppm, FreeRAM float64
-	Mac, SSID                        string
+	Id, Temp, Humidity, Ppm, FreeRAM, Rssi float64
+	Mac, SSID                              string
 }
 
 var co2_data co2_struct
@@ -51,6 +51,7 @@ func send(w http.ResponseWriter, req *http.Request) {
 	co2Queued.WithLabelValues("Temp", co2_data.SSID, co2_data.Mac).Set(co2_data.Temp)
 	co2Queued.WithLabelValues("Humidity", co2_data.SSID, co2_data.Mac).Set(co2_data.Humidity)
 	co2Queued.WithLabelValues("PPM", co2_data.SSID, co2_data.Mac).Set(co2_data.Ppm)
+	co2Queued.WithLabelValues("RSSI", co2_data.SSID, co2_data.Mac).Set(co2_data.Rssi)
 	log.Printf("JSON: %+v\n", co2_data)
 }
 
